@@ -1,0 +1,237 @@
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis PCA Avanzado - Ferretería</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-8">
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-bold mb-4">Análisis Avanzado de Componentes Principales</h2>
+            
+            <!-- Sección de Visualizaciones -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div class="space-y-4">
+                    <h3 class="text-xl font-semibold">Visualización de Componentes y Clusters</h3>
+                    <img src="{{ url_for('static', filename=scatter_plot) }}" alt="PCA Scatter Plot" class="w-full rounded-lg shadow">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h4 class="font-semibold mb-2">Interpretación:</h4>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Los colores representan la probabilidad de compra futura</li>
+                            <li>Los diferentes estilos de marcadores representan clusters de clientes</li>
+                            <li>La distancia entre puntos indica similitud en comportamiento de compra</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <h3 class="text-xl font-semibold">Análisis de Varianza</h3>
+                    <img src="{{ url_for('static', filename=variance_plot) }}" alt="Variance Plot" class="w-full rounded-lg shadow">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h4 class="font-semibold mb-2">Interpretación:</h4>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>La línea punteada roja marca el umbral del 95% de varianza explicada</li>
+                            <li>Cada barra representa la importancia relativa de cada componente</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Nueva sección: Correlaciones -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4">Correlaciones entre Variables y Componentes</h3>
+                <img src="{{ url_for('static', filename=correlation_plot) }}" alt="Correlation Plot" class="w-full rounded-lg shadow">
+                <div class="bg-blue-50 p-4 rounded-lg mt-4">
+                    <h4 class="font-semibold mb-2">Interpretación del Heatmap:</h4>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Colores rojos indican correlaciones positivas</li>
+                        <li>Colores azules indican correlaciones negativas</li>
+                        <li>La intensidad del color representa la fuerza de la correlación</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Sección de Estadísticas de Clusters -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4">Análisis de Clusters</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                        <thead class="bg-blue-600 text-white">
+                            <tr>
+                                <th class="py-2 px-4">Cluster</th>
+                                <th class="py-2 px-4">Tamaño</th>
+                                <th class="py-2 px-4">Promedio PC1</th>
+                                <th class="py-2 px-4">Promedio PC2</th>
+                                <th class="py-2 px-4">Prob. Compra Futura</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in cluster_stats %}
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="py-2 px-4">{{ stat.Cluster }}</td>
+                                <td class="py-2 px-4">{{ stat.Size }}</td>
+                                <td class="py-2 px-4">{{ stat.Avg_PC1 }}</td>
+                                <td class="py-2 px-4">{{ stat.Avg_PC2 }}</td>
+                                <td class="py-2 px-4">{{ "%.1f"|format(stat.Compra_Futura_Prob * 100) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Sección de Importancia de Características -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4">Importancia de Características</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                        <thead class="bg-blue-600 text-white">
+                            <tr>
+                                <th class="py-2 px-4">Característica</th>
+                                <th class="py-2 px-4">Contribución a PC1</th>
+                                <th class="py-2 px-4">Contribución a PC2</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feat in feature_importance %}
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="py-2 px-4">{{ feat.Feature }}</td>
+                                <td class="py-2 px-4">{{ "%.1f"|format(feat.PC1_contribution * 100) }}%</td>
+                                <td class="py-2 px-4">{{ "%.1f"|format(feat.PC2_contribution * 100) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Nueva sección: Recomendaciones basadas en análisis -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4">Insights y Recomendaciones</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Segmentación de Clientes -->
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg shadow">
+                        <h4 class="font-semibold text-lg mb-3">
+                            <i class="fas fa-users mr-2 text-blue-600"></i>
+                            Segmentación de Clientes
+                        </h4>
+                        <ul class="space-y-2">
+                            {% for stat in cluster_stats %}
+                            <li class="flex items-center">
+                                <span class="w-3 h-3 rounded-full bg-blue-{{ 300 + stat.Cluster * 200 }} mr-2"></span>
+                                <span>Cluster {{ stat.Cluster }}: 
+                                    {{ "%.1f"|format(stat.Compra_Futura_Prob * 100) }}% probabilidad de compra
+                                </span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- Principales Drivers -->
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg shadow">
+                        <h4 class="font-semibold text-lg mb-3">
+                            <i class="fas fa-chart-line mr-2 text-green-600"></i>
+                            Principales Drivers
+                        </h4>
+                        <ul class="space-y-2">
+                            {% for feat in feature_importance[:3] %}
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                <span>{{ feat.Feature }}: 
+                                    {{ "%.1f"|format(feat.PC1_contribution * 100) }}% influencia
+                                </span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nueva sección: Métricas de Calidad del Modelo -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4">Métricas de Calidad del Modelo</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Varianza Explicada -->
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <div class="text-center">
+                            <h4 class="font-semibold mb-2">Varianza Explicada Total</h4>
+                            <p class="text-3xl font-bold text-blue-600">
+                                {{ "%.1f"|format(explained_variance.cumulative[-1] * 100) }}%
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Número de Componentes Significativos -->
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <div class="text-center">
+                            <h4 class="font-semibold mb-2">Componentes Significativos</h4>
+                            <p class="text-3xl font-bold text-green-600">
+                                {% set significant = namespace(count=0) %}
+                                {% for var in explained_variance.individual %}
+                                    {% if var > 0.1 %}
+                                        {% set significant.count = significant.count + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ significant.count }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Calidad de Representación -->
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <div class="text-center">
+                            <h4 class="font-semibold mb-2">Calidad de Clustering</h4>
+                            <p class="text-3xl font-bold text-purple-600">
+                                {{ "%.1f"|format(cluster_stats|sum(attribute='Compra_Futura_Prob')/3 * 100) }}%
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conclusiones -->
+            <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg shadow">
+                <h3 class="text-xl font-semibold mb-4">
+                    <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
+                    Conclusiones
+                </h3>
+                <div class="space-y-4">
+                    <p class="text-gray-700">
+                        El análisis PCA ha revelado patrones importantes en el comportamiento de compra:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>Se identificaron {{ significant.count }} componentes principales que explican la mayoría de la variabilidad</li>
+                        <li>Los clientes se agrupan naturalmente en 3 segmentos distintos con diferentes probabilidades de compra</li>
+                        <li>Las variables más influyentes son: 
+                            {% for feat in feature_importance[:2] %}
+                                {{ feat.Feature }}{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts para interactividad -->
+    <script>
+        // Función para mostrar tooltips en gráficos
+        document.querySelectorAll('[data-tooltip]').forEach(element => {
+            element.addEventListener('mouseover', e => {
+                const tooltip = document.createElement('div');
+                tooltip.className = 'bg-black text-white p-2 rounded absolute z-10';
+                tooltip.textContent = e.target.dataset.tooltip;
+                document.body.appendChild(tooltip);
+                
+                const rect = e.target.getBoundingClientRect();
+                tooltip.style.left = `${rect.left}px`;
+                tooltip.style.top = `${rect.bottom + 5}px`;
+                
+                e.target.addEventListener('mouseout', () => tooltip.remove());
+            });
+        });
+    </script>
+</body>
+</html>
